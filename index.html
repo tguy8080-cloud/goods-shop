@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="작은 굿즈를 둘러보고 테스트 주문을 해 볼 수 있는 학습용 쇼핑몰입니다.">
+  <title>Goods Shop | 상품</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/config.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.89.0" defer></script>
+  <script src="assets/js/client.js" defer></script>
+  <script src="assets/js/catalog.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html">goods shop<span>.</span></a>
+    <nav class="site-nav" aria-label="주요 메뉴">
+      <a href="index.html" data-page="index.html">상품</a>
+      <a href="my-orders.html" data-page="my-orders.html">내 주문</a>
+      <a href="admin.html" data-page="admin.html">관리자</a>
+      <a id="account-link" class="nav-cta" href="auth.html">로그인</a>
+    </nav>
+  </header>
+  <main class="container">
+    <section class="hero">
+      <p class="eyebrow">작은 취향을 담은 굿즈</p>
+      <h1>마음에 드는 굿즈를<br>천천히 골라보세요.</h1>
+      <p class="muted">테스트용 샘플 상품을 둘러보고 주문 흐름을 확인할 수 있습니다.</p>
+      <a class="button button-dark" href="#products">상품 둘러보기</a>
+    </section>
+    <section id="products" class="section" aria-labelledby="products-heading">
+      <div class="section-heading"><div><p class="eyebrow">SHOP</p><h2 id="products-heading">상품 목록</h2></div><span class="muted">테스트 상품</span></div>
+      <p id="catalog-status" class="notice" role="status" aria-live="polite">상품을 불러오고 있습니다…</p>
+      <div id="product-grid" class="product-grid"></div>
+      <p class="fine-print">학습용 예시 상품입니다. 배송되지 않으며 결제 테스트에서 실제 금액이 청구되지 않습니다.</p>
+    </section>
+  </main>
+  <footer class="site-footer"><span>goods shop</span><span>학습용 테스트 쇼핑몰</span></footer>
+</body>
+</html>

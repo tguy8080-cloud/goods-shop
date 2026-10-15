@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>주문 및 테스트 결제 | Goods Shop</title><link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/config.js" defer></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.89.0" defer></script><script src="assets/js/client.js" defer></script><script src="https://js.tosspayments.com/v2/standard" defer></script><script src="assets/js/checkout.js" defer></script>
+</head>
+<body>
+  <header class="site-header"><a class="brand" href="index.html">goods shop<span>.</span></a><nav class="site-nav" aria-label="주요 메뉴"><a href="index.html" data-page="index.html">상품</a><a href="my-orders.html" data-page="my-orders.html">내 주문</a><a id="account-link" class="nav-cta" href="auth.html">로그인</a></nav></header>
+  <main class="container narrow"><section class="page-intro"><p class="eyebrow">CHECKOUT · TEST ONLY</p><h1>주문 확인</h1><p class="muted">테스트 키로만 결제창을 열 수 있습니다. 실제 결제 금액은 청구되지 않습니다.</p></section>
+    <p id="checkout-status" class="notice" role="status" aria-live="polite">주문 화면을 준비하고 있습니다…</p>
+    <p id="checkout-login" hidden><a class="button button-dark" href="auth.html">로그인하기</a></p>
+    <form id="checkout-form" class="panel form-stack" hidden>
+      <h2 id="checkout-product"></h2>
+      <p class="muted">상품 가격: <span id="checkout-unit-price"></span></p>
+      <label>수량<select id="quantity" name="quantity"><option value="1">1개</option><option value="2">2개</option><option value="3">3개</option><option value="4">4개</option><option value="5">5개</option><option value="6">6개</option><option value="7">7개</option><option value="8">8개</option><option value="9">9개</option><option value="10">10개</option></select></label>
+      <p class="total-line">테스트 주문 금액 <strong id="checkout-total"></strong></p>
+      <p class="fine-print">상품 금액은 서버가 다시 확인합니다. 이 샘플 상품은 배송되지 않습니다.</p>
+      <button class="button button-dark" type="submit">Toss 테스트 결제 열기</button>
+      <div id="toss-setup" class="notice" hidden><p>Toss 테스트 결제 설정이 필요합니다. 프로젝트의 개발 설정 안내를 확인해 주세요.</p></div>
+    </form>
+    <p><a class="text-link" href="index.html">← 상품 목록으로</a></p>
+  </main>
+  <footer class="site-footer"><span>goods shop</span><span>결제 승인 키는 Supabase 서버에서만 사용합니다.</span></footer>
+</body>
+</html>
