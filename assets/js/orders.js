@@ -39,7 +39,11 @@ async function loadMyOrders() {
       const place = document.createElement("span");
       place.textContent = `배송지: ${shipping.label} · (${shipping.postal_code}) ${shipping.address1}${shipping.address2 ? ` ${shipping.address2}` : ""}`;
       const person = document.createElement("span");
-      person.textContent = `받는 사람: ${shipping.recipient_name} · ${shipping.phone.replace(/(\d{3})\d+(\d{4})$/, "$1-****-$2")}`;
+      const phoneDigits = shipping.phone.replace(/\D/g, "");
+      const maskedPhone = phoneDigits.length >= 7
+        ? `${phoneDigits.slice(0, 3)}-****-${phoneDigits.slice(-4)}`
+        : shipping.phone;
+      person.textContent = `받는 사람: ${shipping.recipient_name} · ${maskedPhone}`;
       shippingDetails.append(place, person);
       if (shipping.delivery_request) {
         const request = document.createElement("span");
