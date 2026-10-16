@@ -3,5 +3,5 @@
 window.GOODS_CONFIG = {
   supabaseUrl: "https://equyponvuojsieshjozh.supabase.co",
   supabasePublishableKey: "sb_publishable_3KalN2PvjYQMbVLzEHFOCg_WXCfvelI",
-  tossTestClientKey: ""
+  tossTestClientKey: "test_ck_yL0qZ4G1VO5oLndmqPlM8oWb2MQY"
 };
