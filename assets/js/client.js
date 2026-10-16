@@ -41,6 +41,14 @@
       }
       return profileName || metadata.display_name?.trim() || metadata.name?.trim() || user.email?.split("@")[0] || "회원";
     },
+    setGreeting(user, displayName) {
+      const greeting = document.querySelector("#user-greeting");
+      if (!greeting || !user) return;
+      const isAdmin = user.app_metadata?.role === "admin";
+      greeting.href = "account.html";
+      greeting.textContent = `안녕하세요, ${displayName}님${isAdmin ? " (관리자)" : ""}`;
+      greeting.hidden = false;
+    },
     artClass(key) {
       return ["sun", "blue", "green"].includes(key) ? `art-${key}` : "art-sun";
     }
@@ -59,9 +67,7 @@
       if (!user) return;
       if (greeting) {
         const displayName = await window.goodsUi.displayName(user);
-        const isAdmin = user.app_metadata?.role === "admin";
-        greeting.textContent = `안녕하세요, ${displayName}님${isAdmin ? " (관리자)" : ""}`;
-        greeting.hidden = false;
+        window.goodsUi.setGreeting(user, displayName);
       }
       accountLink.textContent = "로그아웃";
       accountLink.href = "#logout";
@@ -75,3 +81,4 @@
     }
   });
 })();
+

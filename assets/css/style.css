@@ -9,6 +9,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .site-nav { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 8px; font-size: .84rem; }
 .site-nav a { min-height: 40px; display: inline-flex; align-items: center; text-decoration: none; white-space: nowrap; }
 .user-greeting { color: var(--muted); font-size: .76rem; line-height: 1.4; }
+.user-greeting:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
 .site-nav a:hover, .product-info a:hover { color: var(--accent); }
 .site-nav a[aria-current="page"] { text-decoration: underline; text-underline-offset: 5px; }
 .nav-cta { padding: 5px 11px; border: 1px solid var(--ink); border-radius: 99px; }
@@ -63,6 +64,37 @@ h3 { margin: 3px 0 2px; font-size: 1.05rem; line-height: 1.4; }
 .order-card { padding: 18px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
 .order-card h2 { margin-bottom: 8px; font-size: 1.05rem; }
 .order-card p { margin: 0; color: var(--muted); font-size: .9rem; }
+.order-shipping { display: grid; gap: 4px; margin-top: 12px !important; padding-top: 10px; border-top: 1px solid var(--line); }
+.order-card .order-shipping span { display: block; }
+.order-card .button-row .button { min-width: 112px; }
+.shipping-fieldset { min-width: 0; margin: 8px 0; padding: 16px; border: 1px solid var(--line); border-radius: 8px; }
+.shipping-fieldset legend { padding: 0 6px; font-weight: 700; }
+.shipping-choice-list { display: grid; gap: 8px; }
+.form-stack .shipping-choice { display: flex; align-items: flex-start; gap: 12px; min-height: 56px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: #fff; cursor: pointer; }
+.shipping-choice input { flex: 0 0 20px; width: 20px; min-height: 20px; margin: 2px 0 0; accent-color: var(--accent); }
+.shipping-choice span { display: grid; min-width: 0; gap: 3px; }
+.shipping-choice small { overflow-wrap: anywhere; line-height: 1.45; }
+.new-shipping-fields { margin-top: 14px; padding: 14px; border-radius: 8px; background: var(--soft); }
+.new-shipping-fields h3 { margin: 0; font-size: 1rem; }
+#admin-table td:last-child { min-width: 260px; white-space: pre-line; }
+.address-list { display: grid; gap: 12px; }
+.address-card { min-width: 0; padding: 16px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+.address-card h3 { margin: 0 0 8px; }
+.address-card p { margin: 3px 0; color: var(--muted); overflow-wrap: anywhere; }
+.default-badge { display: inline-block; padding: 2px 8px; border-radius: 99px; background: var(--soft); color: #646359; font-size: .72rem; font-weight: 600; vertical-align: middle; }
+.address-actions { gap: 8px; margin-top: 12px; }
+.account-section { margin-bottom: 24px; }
+.address-form { margin-top: 16px; }
+.form-stack .checkbox-label { display: flex; align-items: center; gap: 10px; min-height: 44px; }
+.checkbox-label input { width: 20px; min-height: 20px; margin: 0; accent-color: var(--accent); }
+.account-delete { margin-top: 56px; padding: 18px 0 32px; border-top: 1px solid var(--line); }
+.account-delete h2 { margin: 0 0 4px; color: var(--muted); font-size: 1rem; font-weight: 600; letter-spacing: 0; }
+.account-delete p { margin: 4px 0; }
+.text-button { min-height: 44px; padding: 4px 8px; border: 0; background: transparent; color: var(--muted); font: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.text-button:hover { color: #8b4a40; }
+.delete-account-panel { margin-top: 8px; padding: 14px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+.delete-account-panel label { display: grid; gap: 6px; margin-top: 12px; }
+.delete-account-panel input { width: 100%; min-height: 46px; padding: 10px 12px; border: 1px solid #c9c8be; border-radius: 6px; font: inherit; }
 .table-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
 table { width: 100%; min-width: 760px; border-collapse: collapse; text-align: left; }
 th, td { padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
@@ -87,3 +119,4 @@ td { font-size: .9rem; }
   .product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; }
   .product-art { min-height: 310px; }
 }
+

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>내 정보 | Goods Shop</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/config.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.89.0" defer></script>
+  <script src="assets/js/client.js" defer></script>
+  <script src="assets/js/account.js" defer></script>
+</head>
+<body>
+  <header class="site-header"><a class="brand" href="index.html">goods shop<span>.</span></a><nav class="site-nav" aria-label="주요 메뉴"><a href="index.html" data-page="index.html">상품</a><a href="my-orders.html" data-page="my-orders.html">내 주문</a><a id="user-greeting" class="user-greeting" href="account.html" aria-live="polite" hidden></a><a id="account-link" class="nav-cta" href="auth.html">로그인</a></nav></header>
+  <main class="container narrow">
+    <section class="page-intro"><p class="eyebrow">MY ACCOUNT</p><h1>내 정보</h1><p class="muted">계정 정보와 배송지를 관리할 수 있습니다.</p></section>
+    <p id="account-status" class="notice" role="status" aria-live="polite" hidden></p>
+    <p id="account-login" class="notice" hidden>내 정보를 보려면 먼저 로그인해 주세요. <a href="auth.html">로그인하기</a></p>
+    <div id="account-content" hidden>
+      <section class="panel account-section" aria-labelledby="basic-info-heading">
+        <h2 id="basic-info-heading">기본 정보</h2>
+        <form id="profile-form" class="form-stack">
+          <label>이름<input id="profile-display-name" name="display_name" type="text" maxlength="80" autocomplete="name" required disabled></label>
+          <label>이메일<input id="profile-email" type="email" readonly aria-describedby="email-note"></label>
+          <small id="email-note" class="fine-print">이메일 변경은 이 페이지에서 지원하지 않습니다.</small>
+          <div class="button-row"><button id="profile-edit-button" class="button button-light" type="button">이름 수정</button><button id="profile-cancel-button" class="button button-light" type="button" hidden>취소</button><button id="profile-save-button" class="button button-dark" type="submit" hidden>저장</button></div>
+        </form>
+      </section>
+
+      <section class="panel account-section" aria-labelledby="password-heading">
+        <h2 id="password-heading">비밀번호 변경</h2>
+        <form id="password-form" class="form-stack">
+          <label>새 비밀번호<input name="password" type="password" autocomplete="new-password" minlength="8" required></label>
+          <label>새 비밀번호 확인<input name="password_confirm" type="password" autocomplete="new-password" minlength="8" required></label>
+          <button class="button button-dark" type="submit">비밀번호 변경</button>
+        </form>
+      </section>
+
+      <section class="account-section" aria-labelledby="addresses-heading">
+        <div class="section-heading"><div><p class="eyebrow">ADDRESS BOOK</p><h2 id="addresses-heading">배송지 관리</h2></div><button id="address-add-button" class="button button-light" type="button">+ 새 배송지 추가</button></div>
+        <p id="addresses-status" class="notice" role="status" aria-live="polite" hidden></p>
+        <div id="address-list" class="address-list" aria-live="polite"></div>
+        <form id="address-form" class="panel form-stack address-form" hidden>
+          <h3 id="address-form-heading">새 배송지</h3>
+          <label>배송지 종류<select id="address-type" name="type"><option value="집">집</option><option value="직장">직장</option><option value="기타">기타</option></select></label>
+          <label id="address-custom-label-wrap" hidden>배송지 이름<input id="address-custom-label" name="label" type="text" maxlength="60" placeholder="예: 부모님댁"></label>
+          <label>받는 사람<input name="recipient_name" type="text" maxlength="80" autocomplete="name" required></label>
+          <label>연락처<input name="phone" type="tel" maxlength="40" autocomplete="tel" required></label>
+          <label>우편번호<input name="postal_code" type="text" inputmode="numeric" maxlength="20" autocomplete="postal-code" required></label>
+          <label>기본주소<input name="address1" type="text" maxlength="300" autocomplete="address-line1" required></label>
+          <label>상세주소<input name="address2" type="text" maxlength="300" autocomplete="address-line2"></label>
+          <label class="checkbox-label"><input name="is_default" type="checkbox"> 기본 배송지로 설정</label>
+          <div class="button-row"><button class="button button-dark" type="submit">배송지 저장</button><button id="address-cancel-button" class="button button-light" type="button">취소</button></div>
+        </form>
+      </section>
+
+      <section class="account-delete" aria-labelledby="account-management-heading">
+        <h2 id="account-management-heading">계정 관리</h2>
+        <p class="fine-print">더 이상 서비스를 사용하지 않으시나요?</p>
+        <button id="delete-account-start" class="text-button" type="button">회원 탈퇴</button>
+        <div id="delete-account-panel" class="delete-account-panel" hidden>
+          <p class="fine-print">회원 탈퇴 시 다시 로그인할 수 없습니다. 결제 완료 주문과 결제 이력은 보존되고, 저장한 배송지는 삭제됩니다.</p>
+          <label>계속하려면 <strong>탈퇴</strong>를 입력해 주세요.<input id="delete-account-confirmation" type="text" autocomplete="off"></label>
+          <div class="button-row"><button id="delete-account-button" class="button button-light" type="button" disabled>회원 탈퇴 진행</button><button id="delete-account-cancel" class="button button-light" type="button">취소</button></div>
+        </div>
+      </section>
+    </div>
+  </main>
+  <footer class="site-footer"><span>goods shop</span><span>계정 정보와 배송지는 로그인한 회원만 관리할 수 있습니다.</span></footer>
+</body>
+</html>
+
