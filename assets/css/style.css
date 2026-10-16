@@ -8,6 +8,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .brand span { color: var(--accent); }
 .site-nav { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 8px; font-size: .84rem; }
 .site-nav a { min-height: 40px; display: inline-flex; align-items: center; text-decoration: none; white-space: nowrap; }
+.user-greeting { color: var(--muted); font-size: .76rem; line-height: 1.4; }
 .site-nav a:hover, .product-info a:hover { color: var(--accent); }
 .site-nav a[aria-current="page"] { text-decoration: underline; text-underline-offset: 5px; }
 .nav-cta { padding: 5px 11px; border: 1px solid var(--ink); border-radius: 99px; }
@@ -72,9 +73,14 @@ td { font-size: .9rem; }
 @media (min-width: 620px) {
   .site-header { flex-wrap: nowrap; min-height: 76px; }
   .site-nav { width: auto; justify-content: flex-end; gap: clamp(14px, 3vw, 28px); font-size: .9rem; }
+  .user-greeting { font-size: .8rem; }
   .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 22px; }
   .product-art { min-height: 280px; }
   .auth-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+}
+@media (max-width: 619px) {
+  .site-nav { flex-wrap: wrap; justify-content: flex-end; }
+  .user-greeting { flex: 1 0 100%; order: -1; text-align: right; }
 }
 @media (min-width: 920px) {
   .hero { padding: 100px 0 104px; }

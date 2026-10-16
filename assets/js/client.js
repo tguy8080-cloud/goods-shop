@@ -26,6 +26,21 @@
       if (error) throw error;
       return data.user;
     },
+    async displayName(user) {
+      const metadata = user.user_metadata || {};
+      let profileName = "";
+      try {
+        const { data, error } = await window.goodsShop
+          .from("profiles")
+          .select("display_name")
+          .eq("id", user.id)
+          .maybeSingle();
+        if (!error) profileName = data?.display_name?.trim() || "";
+      } catch (error) {
+        console.warn("Could not read the profile display name.", error.message);
+      }
+      return profileName || metadata.display_name?.trim() || metadata.name?.trim() || user.email?.split("@")[0] || "회원";
+    },
     artClass(key) {
       return ["sun", "blue", "green"].includes(key) ? `art-${key}` : "art-sun";
     }
@@ -38,9 +53,16 @@
     });
     const accountLink = document.querySelector("#account-link");
     if (!accountLink) return;
+    const greeting = document.querySelector("#user-greeting");
     try {
       const user = await window.goodsUi.currentUser();
       if (!user) return;
+      if (greeting) {
+        const displayName = await window.goodsUi.displayName(user);
+        const isAdmin = user.app_metadata?.role === "admin";
+        greeting.textContent = `안녕하세요, ${displayName}님${isAdmin ? " (관리자)" : ""}`;
+        greeting.hidden = false;
+      }
       accountLink.textContent = "로그아웃";
       accountLink.href = "#logout";
       accountLink.addEventListener("click", async (event) => {
