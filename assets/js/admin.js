@@ -48,4 +48,3 @@ async function loadAdminOrders() {
 }
 
 loadAdminOrders().catch(() => goodsUi.message(adminStatus, "관리자 화면을 불러오지 못했습니다.", "error"));
-

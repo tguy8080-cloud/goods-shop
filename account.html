@@ -6,6 +6,7 @@
   <link rel="stylesheet" href="assets/css/style.css">
   <script src="assets/js/config.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.89.0" defer></script>
+  <script src="https://t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" defer></script>
   <script src="assets/js/client.js" defer></script>
   <script src="assets/js/account.js" defer></script>
 </head>
@@ -45,8 +46,9 @@
           <label id="address-custom-label-wrap" hidden>배송지 이름<input id="address-custom-label" name="label" type="text" maxlength="60" placeholder="예: 부모님댁"></label>
           <label>받는 사람<input name="recipient_name" type="text" maxlength="80" autocomplete="name" required></label>
           <label>연락처<input name="phone" type="tel" maxlength="40" autocomplete="tel" required></label>
-          <label>우편번호<input name="postal_code" type="text" inputmode="numeric" maxlength="20" autocomplete="postal-code" required></label>
-          <label>기본주소<input name="address1" type="text" maxlength="300" autocomplete="address-line1" required></label>
+          <div class="address-search-row"><button id="account-address-search" class="button button-light" type="button">주소 검색</button><p id="account-address-search-status" class="fine-print" role="status" aria-live="polite"></p></div>
+          <label>우편번호<input name="postal_code" type="text" inputmode="numeric" maxlength="20" autocomplete="postal-code" readonly required></label>
+          <label>기본주소<input name="address1" type="text" maxlength="300" autocomplete="address-line1" readonly required></label>
           <label>상세주소<input name="address2" type="text" maxlength="300" autocomplete="address-line2"></label>
           <label class="checkbox-label"><input name="is_default" type="checkbox"> 기본 배송지로 설정</label>
           <div class="button-row"><button class="button button-dark" type="submit">배송지 저장</button><button id="address-cancel-button" class="button button-light" type="button">취소</button></div>
@@ -68,4 +70,3 @@
   <footer class="site-footer"><span>goods shop</span><span>계정 정보와 배송지는 로그인한 회원만 관리할 수 있습니다.</span></footer>
 </body>
 </html>
-

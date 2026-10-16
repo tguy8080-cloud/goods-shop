@@ -51,6 +51,49 @@
     },
     artClass(key) {
       return ["sun", "blue", "green"].includes(key) ? `art-${key}` : "art-sun";
+    },
+    imageUrl(path) {
+      if (!path) return "";
+      const { data } = window.goodsShop.storage.from("product-images").getPublicUrl(path);
+      return data.publicUrl;
+    }
+  };
+
+  window.goodsAddressSearch = {
+    open(onSelect, statusNode) {
+      if (!window.kakao?.Postcode) {
+        window.goodsUi.message(statusNode, "주소 검색을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.", "error");
+        return;
+      }
+      window.goodsUi.message(statusNode, "");
+      let dialog = document.querySelector("#address-search-dialog");
+      if (!dialog) {
+        dialog = document.createElement("dialog");
+        dialog.id = "address-search-dialog";
+        dialog.className = "address-search-dialog";
+        dialog.setAttribute("aria-label", "주소 검색");
+        const close = document.createElement("button");
+        close.type = "button";
+        close.className = "button button-light address-search-close";
+        close.textContent = "닫기";
+        close.addEventListener("click", () => dialog.close());
+        const heading = document.createElement("h2");
+        heading.textContent = "주소 검색";
+        const host = document.createElement("div");
+        host.id = "address-search-widget";
+        host.className = "address-search-widget";
+        dialog.append(heading, close, host);
+        document.body.append(dialog);
+      }
+      const host = dialog.querySelector("#address-search-widget");
+      host.replaceChildren();
+      if (!dialog.open) dialog.showModal();
+      new window.kakao.Postcode({
+        oncomplete(result) {
+          onSelect({ postalCode: result.zonecode, address: result.roadAddress || result.address });
+          dialog.close();
+        }
+      }).embed(host);
     }
   };
 
@@ -81,4 +124,3 @@
     }
   });
 })();
-

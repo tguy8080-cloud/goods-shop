@@ -88,4 +88,3 @@ ordersList?.addEventListener("click", async (event) => {
 });
 
 loadMyOrders().catch(() => goodsUi.message(ordersStatus, "주문 내역을 불러오지 못했습니다.", "error"));
-

@@ -166,6 +166,14 @@ document.querySelector("#password-form")?.addEventListener("submit", async (even
 });
 
 document.querySelector("#address-add-button")?.addEventListener("click", () => showAddressForm());
+document.querySelector("#account-address-search")?.addEventListener("click", () => {
+  goodsAddressSearch.open(({ postalCode, address }) => {
+    addressForm.elements.namedItem("postal_code").value = postalCode || "";
+    addressForm.elements.namedItem("address1").value = address || "";
+    addressForm.elements.namedItem("address2").focus();
+    goodsUi.message(document.querySelector("#account-address-search-status"), "주소를 선택했습니다. 상세주소를 입력해 주세요.", "success");
+  }, document.querySelector("#account-address-search-status"));
+});
 document.querySelector("#address-cancel-button")?.addEventListener("click", () => {
   addressForm.hidden = true;
   addressForm.reset();
@@ -298,4 +306,3 @@ document.addEventListener("DOMContentLoaded", async () => {
     goodsUi.message(accountStatus, "계정 정보를 불러오지 못했습니다. 새로고침 후 다시 로그인해 주세요.", "error");
   }
 });
-

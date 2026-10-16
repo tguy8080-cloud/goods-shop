@@ -10,7 +10,15 @@ function makeProductCard(product) {
   link.setAttribute("aria-label", `${product.name} 상품 보기`);
   const artwork = document.createElement("span");
   artwork.textContent = product.name;
-  link.append(artwork);
+  if (product.image_path) {
+    link.classList.add("has-product-image");
+    const image = document.createElement("img");
+    image.src = goodsUi.imageUrl(product.image_path);
+    image.alt = "";
+    link.append(image);
+  } else {
+    link.append(artwork);
+  }
   const info = document.createElement("div");
   info.className = "product-info";
   const tag = document.createElement("p");
@@ -30,7 +38,7 @@ function makeProductCard(product) {
 }
 
 async function loadProducts() {
-  const { data, error } = await goodsShop.from("products").select("id,slug,name,description,price_krw,art_key").eq("is_active", true).order("created_at");
+  const { data, error } = await goodsShop.from("products").select("id,slug,name,description,price_krw,art_key,image_path").eq("is_active", true).order("created_at");
   if (error) {
     goodsUi.message(catalogStatus, "상품을 불러오지 못했습니다. 연결 상태를 확인한 뒤 새로고침해 주세요.", "error");
     return;

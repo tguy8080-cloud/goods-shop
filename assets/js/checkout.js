@@ -122,6 +122,14 @@ function updateTotal() {
 
 choiceList?.addEventListener("change", syncShippingForm);
 document.querySelector("#shipping-save-address")?.addEventListener("change", syncShippingForm);
+document.querySelector("#checkout-address-search")?.addEventListener("click", () => {
+  goodsAddressSearch.open(({ postalCode, address }) => {
+    document.querySelector("#shipping-postal-code").value = postalCode || "";
+    document.querySelector("#shipping-address1").value = address || "";
+    document.querySelector("#shipping-address2").focus();
+    goodsUi.message(document.querySelector("#checkout-address-search-status"), "주소를 선택했습니다. 상세주소를 입력해 주세요.", "success");
+  }, document.querySelector("#checkout-address-search-status"));
+});
 document.querySelector("#shipping-new-label")?.addEventListener("change", (event) => {
   const custom = document.querySelector("#shipping-custom-label-wrap");
   custom.hidden = event.target.value !== "기타";
@@ -185,4 +193,3 @@ checkoutForm?.addEventListener("submit", async (event) => {
 prepareCheckout().catch(() => {
   goodsUi.message(checkoutStatus, "주문 화면을 준비하지 못했습니다. 새로고침 후 다시 시도해 주세요.", "error");
 });
-
