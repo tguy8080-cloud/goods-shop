@@ -87,7 +87,7 @@ h3 { margin: 3px 0 2px; font-size: 1.05rem; line-height: 1.4; }
 .default-badge { display: inline-block; padding: 2px 8px; border-radius: 99px; background: var(--soft); color: #646359; font-size: .72rem; font-weight: 600; vertical-align: middle; }
 .address-actions { gap: 8px; margin-top: 12px; }
 .account-section { margin-bottom: 24px; }
-.address-form { margin-top: 16px; }
+.address-form { margin-top: 16px; scroll-margin-top: 16px; }
 .address-search-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 .address-search-row p { margin: 0; }
 .address-search-dialog { position: fixed; width: min(600px, calc(100vw - 24px)); height: min(680px, calc(100dvh - 24px)); max-width: none; max-height: none; padding: 20px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); color: var(--ink); }
