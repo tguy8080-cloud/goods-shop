@@ -6,6 +6,7 @@ const profileEditButton = document.querySelector("#profile-edit-button");
 const profileSaveButton = document.querySelector("#profile-save-button");
 const profileCancelButton = document.querySelector("#profile-cancel-button");
 const addressForm = document.querySelector("#address-form");
+const addressAddButton = document.querySelector("#address-add-button");
 const addressList = document.querySelector("#address-list");
 const addressStatus = document.querySelector("#addresses-status");
 const addressType = document.querySelector("#address-type");
@@ -30,8 +31,10 @@ function selectedAddressLabel() {
 function showAddressForm(address = null) {
   addressForm.reset();
   addressForm.hidden = false;
+  addressAddButton.hidden = true;
   addressForm.dataset.addressId = address?.id || "";
-  document.querySelector("#address-form-heading").textContent = address ? "배송지 수정" : "새 배송지";
+  document.querySelector("#address-form-heading").textContent = address ? "배송지 수정" : "새 배송지 추가";
+  addressForm.querySelector("button[type=submit]").textContent = address ? "수정 저장" : "배송지 저장";
   const knownLabel = ["집", "직장"].includes(address?.label) ? address.label : "기타";
   addressType.value = address ? knownLabel : "집";
   customLabel.value = knownLabel === "기타" ? (address?.label || "") : "";
@@ -44,7 +47,16 @@ function showAddressForm(address = null) {
     address2: address?.address2 || ""
   })) addressForm.elements.namedItem(name).value = value;
   addressForm.elements.namedItem("is_default").checked = Boolean(address?.is_default);
-  addressForm.scrollIntoView({ behavior: "smooth", block: "center" });
+  addressForm.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function closeAddressForm() {
+  addressForm.hidden = true;
+  addressForm.reset();
+  delete addressForm.dataset.addressId;
+  document.querySelector("#address-form-heading").textContent = "새 배송지 추가";
+  addressForm.querySelector("button[type=submit]").textContent = "배송지 저장";
+  addressAddButton.hidden = false;
 }
 
 async function loadAddresses() {
@@ -165,7 +177,7 @@ document.querySelector("#password-form")?.addEventListener("submit", async (even
   goodsUi.message(accountStatus, "비밀번호가 변경되었습니다.", "success");
 });
 
-document.querySelector("#address-add-button")?.addEventListener("click", () => showAddressForm());
+addressAddButton?.addEventListener("click", () => showAddressForm());
 document.querySelector("#account-address-search")?.addEventListener("click", () => {
   goodsAddressSearch.open(({ postalCode, address }) => {
     addressForm.elements.namedItem("postal_code").value = postalCode || "";
@@ -175,9 +187,7 @@ document.querySelector("#account-address-search")?.addEventListener("click", () 
   }, document.querySelector("#account-address-search-status"));
 });
 document.querySelector("#address-cancel-button")?.addEventListener("click", () => {
-  addressForm.hidden = true;
-  addressForm.reset();
-  delete addressForm.dataset.addressId;
+  closeAddressForm();
 });
 addressType?.addEventListener("change", () => {
   customLabelWrap.hidden = addressType.value !== "기타";
@@ -214,11 +224,10 @@ addressForm?.addEventListener("submit", async (event) => {
     goodsUi.message(addressStatus, "배송지를 저장하지 못했습니다. 주소와 연락처를 확인해 주세요.", "error");
     return;
   }
-  addressForm.hidden = true;
-  addressForm.reset();
-  delete addressForm.dataset.addressId;
+  const wasEditing = Boolean(addressId);
+  closeAddressForm();
   await loadAddresses();
-  goodsUi.message(addressStatus, addressId ? "배송지가 수정되었습니다." : "배송지가 저장되었습니다.", "success");
+  goodsUi.message(addressStatus, wasEditing ? "배송지가 수정되었습니다." : "배송지가 저장되었습니다.", "success");
 });
 
 addressList?.addEventListener("click", async (event) => {
