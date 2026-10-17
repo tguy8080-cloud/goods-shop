@@ -7,8 +7,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .site-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; min-height: 68px; padding: 10px 5vw; border-bottom: 1px solid var(--line); background: var(--paper); }
 .brand { flex: 0 0 auto; font-size: 1.15rem; font-weight: 750; letter-spacing: -.06em; text-decoration: none; }
 .brand span { color: var(--accent); }
-.site-nav { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 8px; font-size: .84rem; }
-.site-nav a { min-height: 40px; display: inline-flex; align-items: center; text-decoration: none; white-space: nowrap; }
+.site-nav { display: flex; flex: 1 1 auto; width: auto; min-width: 0; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 6px clamp(8px, 1.5vw, 18px); font-size: .84rem; }
+.site-nav a { min-height: 44px; display: inline-flex; align-items: center; text-decoration: none; white-space: nowrap; }
 .user-greeting { color: var(--muted); font-size: .76rem; line-height: 1.4; }
 .user-greeting:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
 .site-nav a:hover, .product-info a:hover { color: var(--accent); }
@@ -137,7 +137,7 @@ td { font-size: .9rem; }
 .site-footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 16px; padding: 20px 5vw; border-top: 1px solid var(--line); color: var(--muted); font-size: .82rem; }
 @media (min-width: 620px) {
   .site-header { flex-wrap: nowrap; min-height: 76px; }
-  .site-nav { width: auto; justify-content: flex-end; gap: clamp(14px, 3vw, 28px); font-size: .9rem; }
+  .site-nav { justify-content: flex-end; gap: 6px clamp(10px, 1.7vw, 20px); font-size: .9rem; }
   .user-greeting { font-size: .8rem; }
   .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 22px; }
   .product-art { min-height: 280px; }
@@ -145,8 +145,8 @@ td { font-size: .9rem; }
   .admin-product-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 619px) {
-  .site-nav { flex-wrap: wrap; justify-content: flex-end; }
-  .user-greeting { flex: 1 0 100%; order: -1; text-align: right; }
+  .site-nav { flex: 1 0 100%; justify-content: flex-start; }
+  .user-greeting { flex: 1 0 100%; text-align: left; }
   .admin-product-card { grid-template-columns: 88px minmax(0, 1fr); gap: 10px; padding: 10px; }
   .admin-product-photo, .admin-product-art { width: 88px; height: 88px; }
   .admin-product-actions { gap: 6px; }

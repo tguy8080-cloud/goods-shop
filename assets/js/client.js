@@ -41,13 +41,30 @@
       }
       return profileName || metadata.display_name?.trim() || metadata.name?.trim() || user.email?.split("@")[0] || "회원";
     },
-    setGreeting(user, displayName) {
+    renderGlobalNavigation(user, displayName = "") {
+      const ordersLink = document.querySelector("#orders-nav-link");
+      const adminLink = document.querySelector("#admin-nav-link");
+      const accountLink = document.querySelector("#account-link");
       const greeting = document.querySelector("#user-greeting");
-      if (!greeting || !user) return;
-      const isAdmin = user.app_metadata?.role === "admin";
-      greeting.href = "account.html";
-      greeting.textContent = `안녕하세요, ${displayName}님${isAdmin ? " (관리자)" : ""}`;
-      greeting.hidden = false;
+      const loggedIn = Boolean(user);
+      const isAdmin = user?.app_metadata?.role === "admin";
+
+      if (ordersLink) ordersLink.hidden = !loggedIn;
+      if (adminLink) adminLink.hidden = !isAdmin;
+      if (accountLink && loggedIn) {
+        accountLink.textContent = "로그아웃";
+        accountLink.href = "#logout";
+      }
+      if (greeting) {
+        greeting.hidden = !loggedIn;
+        if (loggedIn && displayName) {
+          greeting.href = "account.html";
+          greeting.textContent = `안녕하세요, ${displayName}님`;
+        }
+      }
+    },
+    setGreeting(user, displayName) {
+      this.renderGlobalNavigation(user, displayName);
     },
     artClass(key) {
       return ["sun", "blue", "green"].includes(key) ? `art-${key}` : "art-sun";
@@ -99,21 +116,22 @@
 
   document.addEventListener("DOMContentLoaded", async () => {
     const page = location.pathname.split("/").pop() || "index.html";
+    const productPages = ["index.html", "product.html", "checkout.html", "payment-success.html", "payment-fail.html"];
+    const adminPages = ["admin.html", "admin-products.html"];
+    const activePage = productPages.includes(page) ? "index.html" : adminPages.includes(page) ? "admin.html" : page;
     document.querySelectorAll(".site-nav a[data-page]").forEach((link) => {
-      if (link.dataset.page === page) link.setAttribute("aria-current", "page");
+      if (link.dataset.page === activePage) link.setAttribute("aria-current", "page");
     });
     const accountLink = document.querySelector("#account-link");
     if (!accountLink) return;
-    const greeting = document.querySelector("#user-greeting");
     try {
       const user = await window.goodsUi.currentUser();
-      if (!user) return;
-      if (greeting) {
-        const displayName = await window.goodsUi.displayName(user);
-        window.goodsUi.setGreeting(user, displayName);
+      if (!user) {
+        window.goodsUi.renderGlobalNavigation(null);
+        return;
       }
-      accountLink.textContent = "로그아웃";
-      accountLink.href = "#logout";
+      const displayName = await window.goodsUi.displayName(user);
+      window.goodsUi.renderGlobalNavigation(user, displayName);
       accountLink.addEventListener("click", async (event) => {
         event.preventDefault();
         await window.goodsShop.auth.signOut();

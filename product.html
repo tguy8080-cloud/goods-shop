@@ -2,11 +2,11 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>상품 | Goods Shop</title><link rel="stylesheet" href="assets/css/style.css?v=20261017-3">
-  <script src="assets/js/config.js" defer></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.89.0" defer></script><script src="assets/js/client.js" defer></script><script src="assets/js/product.js" defer></script>
+  <title>상품 | Goods Shop</title><link rel="stylesheet" href="assets/css/style.css?v=20261017-4">
+  <script src="assets/js/config.js" defer></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.89.0" defer></script><script src="assets/js/client.js?v=20261017-4" defer></script><script src="assets/js/product.js" defer></script>
 </head>
 <body>
-  <header class="site-header"><a class="brand" href="index.html">goods shop<span>.</span></a><nav class="site-nav" aria-label="주요 메뉴"><a href="index.html" data-page="index.html">상품</a><a href="my-orders.html" data-page="my-orders.html">내 주문</a><a id="user-greeting" class="user-greeting" href="account.html" aria-live="polite" hidden></a><a id="account-link" class="nav-cta" href="auth.html">로그인</a></nav></header>
+  <header class="site-header"><a class="brand" href="index.html">goods shop<span>.</span></a><nav class="site-nav" aria-label="주요 메뉴"><a href="index.html" data-page="index.html">상품</a><a id="orders-nav-link" href="my-orders.html" data-page="my-orders.html" hidden>내 주문</a><a id="admin-nav-link" href="admin.html" data-page="admin.html" hidden>관리자</a><a id="user-greeting" class="user-greeting" href="account.html" aria-live="polite" hidden></a><a id="account-link" class="nav-cta" href="auth.html">로그인</a></nav></header>
   <main class="container narrow"><p class="eyebrow">PRODUCT</p><p id="product-status" class="notice" role="status" aria-live="polite">상품을 확인하고 있습니다…</p>
     <article id="product-details" class="panel product-detail" hidden><div class="product-art" aria-hidden="true"><span class="art-label"></span></div><h1></h1><p class="product-description muted"></p><p class="product-price"></p><p class="fine-print">학습용 예시 상품입니다. 실제 배송되지 않습니다.</p><a id="buy-link" class="button button-dark" href="checkout.html">주문하기</a></article>
     <p><a class="text-link" href="index.html">← 상품 목록으로</a></p>
