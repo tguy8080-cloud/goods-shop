@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>관리자 | Goods Shop</title><link rel="stylesheet" href="assets/css/style.css?v=20261017-4">
-  <script src="assets/js/config.js" defer></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.89.0" defer></script><script src="assets/js/client.js?v=20261017-4" defer></script><script src="assets/js/admin-products.js?v=20261017-3" defer></script>
+  <script src="assets/js/config.js" defer></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.89.0" defer></script><script src="assets/js/client.js?v=20261017-4" defer></script><script src="assets/js/admin-products.js?v=20261017-4" defer></script>
 </head>
 <body>
   <header class="site-header"><a class="brand" href="index.html">goods shop<span>.</span></a><nav class="site-nav" aria-label="주요 메뉴"><a href="index.html" data-page="index.html">상품</a><a id="orders-nav-link" href="my-orders.html" data-page="my-orders.html" hidden>내 주문</a><a id="admin-nav-link" href="admin.html" data-page="admin.html" hidden>관리자</a><a id="user-greeting" class="user-greeting" href="account.html" aria-live="polite" hidden></a><a id="account-link" class="nav-cta" href="auth.html">로그인</a></nav></header>
@@ -19,7 +19,7 @@
           <label>가격 (원)<input name="price_krw" type="number" min="1" max="100000000" step="1" required></label>
           <label>설명<textarea name="description" rows="4" maxlength="5000"></textarea></label>
           <label>기본 그림 색상<select name="art_key"><option value="sun">따뜻한 색</option><option value="blue">파란 색</option><option value="green">초록 색</option></select></label>
-          <label>상품 이미지 (JPG, PNG, WebP / 5MB 이하)<input id="product-image" name="image" type="file" accept="image/jpeg,image/png,image/webp"></label>
+          <label>상품 이미지 (JPG, PNG, WebP)<input id="product-image" name="image" type="file" accept="image/jpeg,image/png,image/webp"><small>5MB를 넘는 이미지는 자동으로 크기와 용량을 줄입니다. 4.5MB 이하로 최적화해 업로드합니다.</small></label>
           <div id="product-image-preview" class="product-image-preview" aria-live="polite"><p class="fine-print">선택한 이미지 미리보기가 여기에 표시됩니다.</p></div>
           <label class="checkbox-label"><input name="is_active" type="checkbox" checked> 판매중</label>
           <div class="button-row"><button id="product-save-button" class="button button-dark" type="submit">상품 추가</button><button id="product-cancel-button" class="button button-light" type="button">취소</button></div>

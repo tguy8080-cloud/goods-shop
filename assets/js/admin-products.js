@@ -56,6 +56,7 @@ function setEditor(product = null) {
 }
 
 function resetEditor() {
+  imageOptimizationRequest += 1;
   editingProduct = null;
   productForm.reset();
   productEditor.hidden = true;
@@ -152,15 +153,128 @@ async function loadProducts() {
   renderProducts();
 }
 
+const PRODUCT_IMAGE_MAX_BYTES = 5 * 1024 * 1024;
+const PRODUCT_IMAGE_TARGET_BYTES = 4.5 * 1024 * 1024;
+const PRODUCT_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+
+async function decodeProductImage(file) {
+  if (typeof createImageBitmap === "function") {
+    try {
+      const bitmap = await createImageBitmap(file);
+      return { image: bitmap, width: bitmap.width, height: bitmap.height, close: () => bitmap.close() };
+    } catch {
+      // Fall back to an Image element for browsers that cannot decode this file as a bitmap.
+    }
+  }
+
+  const objectUrl = URL.createObjectURL(file);
+  try {
+    const image = await new Promise((resolve, reject) => {
+      const element = new Image();
+      element.onload = () => resolve(element);
+      element.onerror = () => reject(new Error("이미지 파일을 읽지 못했습니다."));
+      element.src = objectUrl;
+    });
+    return {
+      image,
+      width: image.naturalWidth,
+      height: image.naturalHeight,
+      close: () => URL.revokeObjectURL(objectUrl)
+    };
+  } catch (error) {
+    URL.revokeObjectURL(objectUrl);
+    throw error;
+  }
+}
+
+function canvasToBlob(canvas, type, quality) {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (blob) resolve(blob);
+      else reject(new Error("이미지 용량을 줄이지 못했습니다."));
+    }, type, quality);
+  });
+}
+
+function fileForOptimizedBlob(blob, originalFile) {
+  const extensionByType = { "image/webp": "webp", "image/jpeg": "jpg", "image/png": "png" };
+  const extension = extensionByType[blob.type];
+  if (!extension) throw new Error("이미지 변환 결과를 확인할 수 없습니다.");
+  const baseName = originalFile.name.replace(/\.[^.]+$/, "") || "product-image";
+  return new File([blob], `${baseName}.${extension}`, { type: blob.type, lastModified: Date.now() });
+}
+
+function formatProductImageSize(bytes) {
+  return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
+}
+
+async function optimizeProductImage(file) {
+  if (!PRODUCT_IMAGE_TYPES.has(file.type)) {
+    throw new Error("JPG, PNG, WebP 형식의 이미지만 업로드할 수 있습니다.");
+  }
+  if (file.size <= PRODUCT_IMAGE_MAX_BYTES) return file;
+
+  let decoded;
+  try {
+    decoded = await decodeProductImage(file);
+    if (!decoded.width || !decoded.height) throw new Error("이미지 크기를 확인할 수 없습니다.");
+
+    let scale = Math.min(1, 4096 / Math.max(decoded.width, decoded.height));
+    let quality = 0.88;
+    let lastBlob = null;
+    for (let attempt = 0; attempt < 12; attempt += 1) {
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round(decoded.width * scale));
+      canvas.height = Math.max(1, Math.round(decoded.height * scale));
+      const context = canvas.getContext("2d");
+      if (!context) throw new Error("이미지 편집 기능을 사용할 수 없습니다.");
+      context.drawImage(decoded.image, 0, 0, canvas.width, canvas.height);
+
+      let blob = await canvasToBlob(canvas, "image/webp", quality);
+      if (blob.type !== "image/webp") {
+        const fallbackType = file.type === "image/jpeg" ? "image/jpeg" : "image/png";
+        blob = await canvasToBlob(canvas, fallbackType, fallbackType === "image/jpeg" ? quality : undefined);
+      }
+      lastBlob = blob;
+      if (blob.size <= PRODUCT_IMAGE_TARGET_BYTES) return fileForOptimizedBlob(blob, file);
+
+      const sizeScale = Math.sqrt(PRODUCT_IMAGE_TARGET_BYTES / blob.size) * 0.88;
+      scale *= Math.min(0.85, sizeScale);
+      if (blob.type !== "image/png") quality = Math.max(0.5, quality - 0.07);
+    }
+
+    if (lastBlob && lastBlob.size <= PRODUCT_IMAGE_MAX_BYTES) return fileForOptimizedBlob(lastBlob, file);
+    throw new Error("이미지를 5MB 이하로 줄이지 못했습니다. 다른 이미지 파일을 사용해 주세요.");
+  } catch (error) {
+    if (error.message?.includes("이미지")) throw error;
+    throw new Error("이미지를 자동으로 최적화하지 못했습니다. 다른 이미지 파일을 사용해 주세요.");
+  } finally {
+    decoded?.close();
+  }
+}
+
+async function optimizeAndReportProductImage(file) {
+  if (file.size <= PRODUCT_IMAGE_MAX_BYTES) return file;
+  goodsUi.message(productAdminStatus, "이미지를 최적화하고 있습니다…");
+  const optimizedFile = await optimizeProductImage(file);
+  goodsUi.message(
+    productAdminStatus,
+    `${formatProductImageSize(file.size)} → ${formatProductImageSize(optimizedFile.size)}로 최적화되었습니다.`,
+    "success"
+  );
+  return optimizedFile;
+}
+
 async function uploadProductImage(productId, file) {
   if (!file) return null;
-  const supported = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
-  if (!supported[file.type] || file.size > 5 * 1024 * 1024) {
-    throw new Error("JPG, PNG, WebP 형식의 5MB 이하 이미지를 선택해 주세요.");
+  const optimizedFile = await optimizeAndReportProductImage(file);
+  if (optimizedFile.size > PRODUCT_IMAGE_MAX_BYTES) {
+    throw new Error("최적화된 이미지가 5MB를 초과해 업로드할 수 없습니다.");
   }
-  const path = `${productId}/${crypto.randomUUID()}.${supported[file.type]}`;
-  const { error } = await goodsShop.storage.from("product-images").upload(path, file, {
-    contentType: file.type,
+  const extensionByType = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
+  const path = `${productId}/${crypto.randomUUID()}.${extensionByType[optimizedFile.type]}`;
+  const { error } = await goodsShop.storage.from("product-images").upload(path, optimizedFile, {
+    contentType: optimizedFile.type,
     cacheControl: "3600",
     upsert: false
   });
@@ -238,7 +352,36 @@ productForm.addEventListener("submit", async (event) => {
 
 productAddButton.addEventListener("click", () => setEditor());
 document.querySelector("#product-cancel-button").addEventListener("click", resetEditor);
-document.querySelector("#product-image")?.addEventListener("change", (event) => renderImagePreview(event.currentTarget.files[0] || null));
+let imageOptimizationRequest = 0;
+document.querySelector("#product-image")?.addEventListener("change", async (event) => {
+  const input = event.currentTarget;
+  const file = input.files[0] || null;
+  const requestId = ++imageOptimizationRequest;
+  renderImagePreview(file);
+  if (!file) return;
+  if (file.size <= PRODUCT_IMAGE_MAX_BYTES) {
+    goodsUi.message(productAdminStatus, "");
+    return;
+  }
+  try {
+    goodsUi.message(productAdminStatus, "이미지를 최적화하고 있습니다…");
+    const optimizedFile = await optimizeProductImage(file);
+    if (requestId !== imageOptimizationRequest || input.files[0] !== file) return;
+    const transfer = new DataTransfer();
+    transfer.items.add(optimizedFile);
+    input.files = transfer.files;
+    renderImagePreview(optimizedFile);
+    goodsUi.message(
+      productAdminStatus,
+      `${formatProductImageSize(file.size)} → ${formatProductImageSize(optimizedFile.size)}로 최적화되었습니다.`,
+      "success"
+    );
+  } catch (error) {
+    if (requestId === imageOptimizationRequest) {
+      goodsUi.message(productAdminStatus, error.message || "이미지를 자동으로 최적화하지 못했습니다.", "error");
+    }
+  }
+});
 productFilter.addEventListener("change", renderProducts);
 productAdminList.addEventListener("click", async (event) => {
   const button = event.target.closest("button[data-action]");
