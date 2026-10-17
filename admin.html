@@ -1,9 +1,10 @@
 <!doctype html>
 <html lang="ko">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>관리자 | Goods Shop</title><link rel="stylesheet" href="assets/css/style.css"><script src="assets/js/config.js" defer></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.89.0" defer></script><script src="assets/js/client.js" defer></script><script src="assets/js/admin.js" defer></script></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>관리자 | Goods Shop</title><link rel="stylesheet" href="assets/css/style.css?v=20261017-3"><script src="assets/js/config.js" defer></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.89.0" defer></script><script src="assets/js/client.js" defer></script><script src="assets/js/admin.js?v=20261017-3" defer></script></head>
 <body>
   <header class="site-header"><a class="brand" href="index.html">goods shop<span>.</span></a><nav class="site-nav" aria-label="주요 메뉴"><a href="index.html" data-page="index.html">상품</a><a href="my-orders.html" data-page="my-orders.html">내 주문</a><a href="admin.html" data-page="admin.html">관리자</a><a id="user-greeting" class="user-greeting" href="account.html" aria-live="polite" hidden></a><a id="account-link" class="nav-cta" href="auth.html">로그인</a></nav></header>
-  <main class="container"><section class="page-intro"><p class="eyebrow">ADMIN</p><h1>주문 및 결제 관리</h1><p class="muted">관리자 권한이 있는 계정만 모든 고객의 주문을 조회할 수 있습니다.</p><p><a class="button button-light" href="admin-products.html">상품 관리</a></p></section>
+  <main class="container"><section class="page-intro"><p class="eyebrow">ADMIN</p><h1>관리자</h1><p class="muted">주문과 상품을 관리합니다. 관리자 권한이 있는 계정만 이용할 수 있습니다.</p></section>
+    <nav class="admin-navigation" aria-label="관리자 메뉴"><a href="admin.html" aria-current="page">주문 관리</a><a href="admin-products.html">상품 관리</a></nav>
     <p id="admin-status" class="notice" role="status" aria-live="polite">권한을 확인하고 있습니다…</p><p id="admin-login" hidden><a class="button button-dark" href="auth.html">관리자 로그인</a></p>
      <div class="table-scroll"><table id="admin-table"><thead><tr><th>주문 시각</th><th>사용자</th><th>상품</th><th>금액</th><th>상태</th><th>결제 방식</th><th>배송 정보</th></tr></thead><tbody></tbody></table></div>
     <p class="fine-print">관리자 권한이 있는 계정으로 로그인해 주세요.</p>

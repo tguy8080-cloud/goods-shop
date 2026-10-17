@@ -2,15 +2,17 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>상품 관리 | Goods Shop</title><link rel="stylesheet" href="assets/css/style.css">
-  <script src="assets/js/config.js" defer></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.89.0" defer></script><script src="assets/js/client.js" defer></script><script src="assets/js/admin-products.js" defer></script>
+  <title>관리자 | Goods Shop</title><link rel="stylesheet" href="assets/css/style.css?v=20261017-3">
+  <script src="assets/js/config.js" defer></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.89.0" defer></script><script src="assets/js/client.js" defer></script><script src="assets/js/admin-products.js?v=20261017-3" defer></script>
 </head>
 <body>
   <header class="site-header"><a class="brand" href="index.html">goods shop<span>.</span></a><nav class="site-nav" aria-label="주요 메뉴"><a href="index.html" data-page="index.html">상품</a><a href="my-orders.html" data-page="my-orders.html">내 주문</a><a href="admin.html" data-page="admin.html">주문 관리</a><a id="user-greeting" class="user-greeting" href="account.html" aria-live="polite" hidden></a><a id="account-link" class="nav-cta" href="auth.html">로그인</a></nav></header>
-  <main class="container"><section class="page-intro"><p class="eyebrow">ADMIN</p><h1>상품 관리</h1><p class="muted">상품과 가격, 이미지를 관리합니다. 판매중지는 과거 주문을 보존합니다.</p></section>
+  <main class="container"><section class="page-intro"><p class="eyebrow">ADMIN</p><h1>관리자</h1><p class="muted">주문과 상품을 관리합니다. 판매중지는 과거 주문을 보존합니다.</p></section>
+    <nav class="admin-navigation" aria-label="관리자 메뉴"><a href="admin.html">주문 관리</a><a href="admin-products.html" aria-current="page">상품 관리</a></nav>
     <p id="product-admin-status" class="notice" role="status" aria-live="polite">관리자 권한을 확인하고 있습니다…</p><p id="product-admin-login" hidden><a class="button button-dark" href="auth.html">관리자 로그인</a></p>
     <section id="product-admin-content" hidden>
-      <section class="panel product-editor" aria-labelledby="product-editor-heading"><h2 id="product-editor-heading">상품 추가</h2>
+      <section class="section" aria-labelledby="product-list-heading"><div class="section-heading"><div><p class="eyebrow">PRODUCTS</p><h2 id="product-list-heading">상품 관리</h2></div><button id="product-add-button" class="button button-light" type="button">+ 상품 추가</button></div></section>
+      <section id="product-editor" class="panel product-editor" aria-labelledby="product-editor-heading" hidden><h2 id="product-editor-heading">상품 추가</h2>
         <form id="product-form" class="form-stack">
           <label>상품 코드<input name="slug" type="text" maxlength="100" pattern="[a-z0-9-]+" placeholder="예: ceramic-mug" required><small>영문 소문자, 숫자, 하이픈만 사용할 수 있습니다.</small></label>
           <label>상품명<input name="name" type="text" maxlength="120" required></label>
@@ -20,10 +22,10 @@
           <label>상품 이미지 (JPG, PNG, WebP / 5MB 이하)<input id="product-image" name="image" type="file" accept="image/jpeg,image/png,image/webp"></label>
           <div id="product-image-preview" class="product-image-preview" aria-live="polite"><p class="fine-print">선택한 이미지 미리보기가 여기에 표시됩니다.</p></div>
           <label class="checkbox-label"><input name="is_active" type="checkbox" checked> 판매중</label>
-          <div class="button-row"><button id="product-save-button" class="button button-dark" type="submit">상품 추가</button><button id="product-cancel-button" class="button button-light" type="button" hidden>취소</button></div>
+          <div class="button-row"><button id="product-save-button" class="button button-dark" type="submit">상품 추가</button><button id="product-cancel-button" class="button button-light" type="button">취소</button></div>
         </form>
       </section>
-      <section class="section"><div class="section-heading"><div><p class="eyebrow">PRODUCTS</p><h2>등록 상품</h2></div><label class="product-filter-label">보기<select id="product-filter"><option value="all">전체</option><option value="active">판매중</option><option value="inactive">판매중지</option></select></label></div>
+      <section class="section"><div class="section-heading"><div><p class="eyebrow">INVENTORY</p><h2>등록 상품</h2></div><label class="product-filter-label">보기<select id="product-filter"><option value="all">전체</option><option value="active">판매중</option><option value="inactive">판매중지</option></select></label></div>
         <div id="product-admin-list" class="admin-product-list"></div>
       </section>
     </section>

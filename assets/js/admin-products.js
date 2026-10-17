@@ -2,6 +2,8 @@ const productAdminStatus = document.querySelector("#product-admin-status");
 const productAdminContent = document.querySelector("#product-admin-content");
 const productAdminList = document.querySelector("#product-admin-list");
 const productForm = document.querySelector("#product-form");
+const productEditor = document.querySelector("#product-editor");
+const productAddButton = document.querySelector("#product-add-button");
 const productFilter = document.querySelector("#product-filter");
 let products = [];
 let usedProductIds = new Set();
@@ -37,6 +39,8 @@ function renderImagePreview(file = null) {
 
 function setEditor(product = null) {
   editingProduct = product;
+  productEditor.hidden = false;
+  productAddButton.hidden = true;
   productForm.reset();
   productForm.elements.namedItem("is_active").checked = product ? product.is_active : true;
   productForm.elements.namedItem("art_key").value = product?.art_key || "sun";
@@ -47,8 +51,19 @@ function setEditor(product = null) {
   renderImagePreview();
   document.querySelector("#product-editor-heading").textContent = product ? "상품 수정" : "상품 추가";
   document.querySelector("#product-save-button").textContent = product ? "변경사항 저장" : "상품 추가";
-  document.querySelector("#product-cancel-button").hidden = !product;
+  document.querySelector("#product-cancel-button").hidden = false;
   productForm.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function resetEditor() {
+  editingProduct = null;
+  productForm.reset();
+  productEditor.hidden = true;
+  productAddButton.hidden = false;
+  document.querySelector("#product-editor-heading").textContent = "상품 추가";
+  document.querySelector("#product-save-button").textContent = "상품 추가";
+  document.querySelector("#product-cancel-button").hidden = true;
+  renderImagePreview();
 }
 
 function makeProductCard(product) {
@@ -206,7 +221,7 @@ productForm.addEventListener("submit", async (event) => {
       databaseSaved = true;
     }
     if (uploadedPath && oldPath) imageCleanupFailed = !(await removeImage(oldPath));
-    setEditor();
+    resetEditor();
     await loadProducts();
     const savedMessage = wasEditing ? "상품 정보가 저장되었습니다." : "상품이 등록되었습니다.";
     goodsUi.message(productAdminStatus, imageCleanupFailed ? `${savedMessage} 다만 이전 이미지 파일을 정리하지 못했습니다.` : savedMessage, imageCleanupFailed ? "error" : "success");
@@ -221,7 +236,8 @@ productForm.addEventListener("submit", async (event) => {
   }
 });
 
-document.querySelector("#product-cancel-button").addEventListener("click", () => setEditor());
+productAddButton.addEventListener("click", () => setEditor());
+document.querySelector("#product-cancel-button").addEventListener("click", resetEditor);
 document.querySelector("#product-image")?.addEventListener("change", (event) => renderImagePreview(event.currentTarget.files[0] || null));
 productFilter.addEventListener("change", renderProducts);
 productAdminList.addEventListener("click", async (event) => {
