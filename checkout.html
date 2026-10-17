@@ -2,8 +2,8 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>주문 및 테스트 결제 | Goods Shop</title><link rel="stylesheet" href="assets/css/style.css?v=20261017-4">
-  <script src="assets/js/config.js" defer></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.89.0" defer></script><script src="https://t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" defer></script><script src="assets/js/client.js?v=20261017-4" defer></script><script src="https://js.tosspayments.com/v2/standard" defer></script><script src="assets/js/checkout.js" defer></script>
+  <title>주문 및 테스트 결제 | Goods Shop</title><link rel="stylesheet" href="assets/css/style.css?v=20261017-6">
+  <script src="assets/js/config.js" defer></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.89.0" defer></script><script src="https://t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" defer></script><script src="assets/js/client.js?v=20261017-6" defer></script><script src="https://js.tosspayments.com/v2/standard" defer></script><script src="assets/js/checkout.js" defer></script>
 </head>
 <body>
   <header class="site-header"><a class="brand" href="index.html">goods shop<span>.</span></a><nav class="site-nav" aria-label="주요 메뉴"><a href="index.html" data-page="index.html">상품</a><a id="orders-nav-link" href="my-orders.html" data-page="my-orders.html" hidden>내 주문</a><a id="admin-nav-link" href="admin.html" data-page="admin.html" hidden>관리자</a><a id="user-greeting" class="user-greeting" href="account.html" aria-live="polite" hidden></a><a id="account-link" class="nav-cta" href="auth.html">로그인</a></nav></header>
@@ -20,16 +20,16 @@
         <div id="shipping-choice-list" class="shipping-choice-list"></div>
         <div id="new-shipping-fields" class="form-stack new-shipping-fields" hidden>
           <h3>이번 주문 배송지</h3>
-          <label>받는 사람<input id="shipping-recipient" type="text" maxlength="80" autocomplete="name"></label>
-          <label>연락처<input id="shipping-phone" type="tel" maxlength="40" autocomplete="tel"></label>
+          <label>받는 사람<input id="shipping-recipient" name="recipient_name" type="text" maxlength="80" autocomplete="name"></label>
+          <label>연락처<input id="shipping-phone" name="phone" type="tel" maxlength="40" autocomplete="tel"></label>
           <div class="address-search-row"><button id="checkout-address-search" class="button button-light" type="button">주소 검색</button><p id="checkout-address-search-status" class="fine-print" role="status" aria-live="polite"></p></div>
-          <label>우편번호<input id="shipping-postal-code" type="text" inputmode="numeric" maxlength="20" autocomplete="postal-code" readonly></label>
-          <label>기본주소<input id="shipping-address1" type="text" maxlength="300" autocomplete="address-line1" readonly></label>
+          <label>우편번호<input id="shipping-postal-code" name="postal_code" type="text" inputmode="numeric" maxlength="20" autocomplete="postal-code" readonly></label>
+          <label>기본주소<input id="shipping-address1" name="address1" type="text" maxlength="300" autocomplete="address-line1" readonly></label>
           <label>상세주소<input id="shipping-address2" type="text" maxlength="300" autocomplete="address-line2"></label>
           <label class="checkbox-label"><input id="shipping-save-address" type="checkbox"> 이 배송지를 내 배송지에 저장</label>
           <label id="shipping-new-default-wrap" class="checkbox-label" hidden><input id="shipping-new-default" type="checkbox"> 이 배송지를 기본 배송지로 설정</label>
           <label>배송지 이름<select id="shipping-new-label"><option value="집">집</option><option value="직장">직장</option><option value="기타">기타</option></select></label>
-          <label id="shipping-custom-label-wrap" hidden>배송지 이름<input id="shipping-custom-label" type="text" maxlength="60" placeholder="예: 부모님댁"></label>
+          <label id="shipping-custom-label-wrap" hidden>배송지 이름<input id="shipping-custom-label" name="custom_label" type="text" maxlength="60" placeholder="예: 부모님댁"></label>
         </div>
         <label>배송 요청사항<select id="delivery-request-choice"><option value="">요청사항 없음</option><option value="문 앞에 놓아주세요">문 앞에 놓아주세요</option><option value="경비실에 맡겨주세요">경비실에 맡겨주세요</option><option value="배송 전 연락 주세요">배송 전 연락 주세요</option><option value="직접 입력">직접 입력</option></select></label>
         <label id="delivery-request-custom-wrap" hidden>배송 요청사항 직접 입력<input id="delivery-request-custom" type="text" maxlength="500"></label>

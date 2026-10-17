@@ -10,6 +10,24 @@ let usedProductIds = new Set();
 let editingProduct = null;
 let imagePreviewUrl = null;
 
+goodsUi.validation.attach(productForm, {
+  name: { validate: (value) => value.trim() ? "" : "상품명을 입력해 주세요." },
+  price_krw: {
+    validateWhileTyping: true,
+    validate: (value) => {
+      if (!value.trim()) return "가격을 입력해 주세요.";
+      const price = Number(value);
+      if (!Number.isInteger(price)) return "가격은 원 단위 정수로 입력해 주세요.";
+      if (price < 1) return "가격은 1원 이상 입력해 주세요.";
+      if (price > 100000000) return "가격은 100,000,000원 이하로 입력해 주세요.";
+      return "";
+    }
+  }
+}, {
+  summary: productAdminStatus,
+  summaryText: "입력 항목을 확인해 주세요."
+});
+
 function renderImagePreview(file = null) {
   const preview = document.querySelector("#product-image-preview");
   if (!preview) return;

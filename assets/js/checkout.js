@@ -6,6 +6,36 @@ const newAddressFields = document.querySelector("#new-shipping-fields");
 let selectedProduct;
 let savedAddresses = [];
 
+function validatePhone(value) {
+  const digits = value.replace(/[\s()-]/g, "");
+  return /^\+?\d{8,15}$/.test(digits) ? "" : "연락처를 확인해 주세요.";
+}
+
+goodsUi.validation.attach(checkoutForm, {
+  recipient_name: {
+    when: () => choiceList.querySelector('input[name="shipping-address-choice"]:checked')?.value === "other",
+    validate: (value) => value.trim() ? "" : "받는 사람을 입력해 주세요."
+  },
+  phone: {
+    when: () => choiceList.querySelector('input[name="shipping-address-choice"]:checked')?.value === "other",
+    validate: validatePhone
+  },
+  postal_code: {
+    when: () => choiceList.querySelector('input[name="shipping-address-choice"]:checked')?.value === "other",
+    validate: (value) => value.trim() ? "" : "주소 검색으로 우편번호를 선택해 주세요."
+  },
+  address1: {
+    when: () => choiceList.querySelector('input[name="shipping-address-choice"]:checked')?.value === "other",
+    validate: (value) => value.trim() ? "" : "주소 검색으로 기본주소를 선택해 주세요."
+  },
+  custom_label: {
+    when: () => choiceList.querySelector('input[name="shipping-address-choice"]:checked')?.value === "other" &&
+      document.querySelector("#shipping-save-address").checked &&
+      document.querySelector("#shipping-new-label").value === "기타",
+    validate: (value) => value.trim() ? "" : "저장할 배송지 이름을 입력해 주세요."
+  }
+});
+
 function addShippingChoice(value, title, details, isDefault = false) {
   const label = document.createElement("label");
   label.className = "shipping-choice";
@@ -29,6 +59,11 @@ function syncShippingForm() {
   newAddressFields.hidden = selected !== "other";
   document.querySelector("#shipping-new-default-wrap").hidden =
     selected !== "other" || !document.querySelector("#shipping-save-address").checked;
+  if (selected !== "other") {
+    for (const name of ["recipient_name", "phone", "postal_code", "address1", "custom_label"]) {
+      goodsUi.validation.resetFieldState(checkoutForm.elements.namedItem(name));
+    }
+  }
 }
 
 async function loadShippingAddresses() {
@@ -124,8 +159,12 @@ choiceList?.addEventListener("change", syncShippingForm);
 document.querySelector("#shipping-save-address")?.addEventListener("change", syncShippingForm);
 document.querySelector("#checkout-address-search")?.addEventListener("click", () => {
   goodsAddressSearch.open(({ postalCode, address }) => {
-    document.querySelector("#shipping-postal-code").value = postalCode || "";
-    document.querySelector("#shipping-address1").value = address || "";
+    const postalField = document.querySelector("#shipping-postal-code");
+    const addressField = document.querySelector("#shipping-address1");
+    postalField.value = postalCode || "";
+    addressField.value = address || "";
+    goodsUi.validation.showFieldSuccess(postalField);
+    goodsUi.validation.showFieldSuccess(addressField);
     document.querySelector("#shipping-address2").focus();
     goodsUi.message(document.querySelector("#checkout-address-search-status"), "주소를 선택했습니다. 상세주소를 입력해 주세요.", "success");
   }, document.querySelector("#checkout-address-search-status"));
@@ -133,6 +172,7 @@ document.querySelector("#checkout-address-search")?.addEventListener("click", ()
 document.querySelector("#shipping-new-label")?.addEventListener("change", (event) => {
   const custom = document.querySelector("#shipping-custom-label-wrap");
   custom.hidden = event.target.value !== "기타";
+  if (custom.hidden) goodsUi.validation.resetFieldState(document.querySelector("#shipping-custom-label"));
 });
 document.querySelector("#delivery-request-choice")?.addEventListener("change", (event) => {
   document.querySelector("#delivery-request-custom-wrap").hidden = event.target.value !== "직접 입력";

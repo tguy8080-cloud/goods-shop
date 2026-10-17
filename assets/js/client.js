@@ -11,15 +11,222 @@
     { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } }
   );
 
+  const fieldFeedbackTimers = new WeakMap();
+  const validationSummaryTimers = new WeakMap();
+
+  function getValidationNodes(field, form = field.form) {
+    if (!field || !form) return null;
+    const label = field.closest("label");
+    if (!label) return null;
+
+    let wrapper = field.closest(".field-control-wrap");
+    if (!wrapper) {
+      wrapper = document.createElement("span");
+      wrapper.className = "field-control-wrap";
+      field.before(wrapper);
+      wrapper.append(field);
+    }
+
+    let check = wrapper.querySelector(".field-check");
+    if (!check) {
+      check = document.createElement("span");
+      check.className = "field-check";
+      check.setAttribute("aria-hidden", "true");
+      check.textContent = "✓";
+      wrapper.append(check);
+    }
+
+    const feedbackId = `field-feedback-${form.id || "form"}-${field.name || field.id || "input"}`;
+    let feedback = [...label.querySelectorAll(".field-feedback")].find((node) => node.id === feedbackId);
+    if (!feedback) {
+      feedback = document.createElement("span");
+      feedback.className = "field-feedback";
+      feedback.id = feedbackId;
+      label.append(feedback);
+    }
+    const describedBy = new Set((field.getAttribute("aria-describedby") || "").split(/\s+/).filter(Boolean));
+    describedBy.add(feedbackId);
+    field.setAttribute("aria-describedby", [...describedBy].join(" "));
+    return { wrapper, check, feedback };
+  }
+
+  function clearFieldTimer(field) {
+    const timer = fieldFeedbackTimers.get(field);
+    if (timer) clearTimeout(timer);
+    fieldFeedbackTimers.delete(field);
+  }
+
+  function resetFieldState(field) {
+    const nodes = getValidationNodes(field);
+    if (!nodes) return;
+    clearFieldTimer(field);
+    field.dataset.fieldState = "neutral";
+    field.removeAttribute("aria-invalid");
+    nodes.wrapper.dataset.fieldState = "neutral";
+    nodes.wrapper.classList.remove("field-error-pulse");
+    nodes.feedback.className = "field-feedback";
+    nodes.feedback.textContent = "";
+    nodes.check.classList.remove("is-animated");
+  }
+
+  function showFieldError(field, message) {
+    const nodes = getValidationNodes(field);
+    if (!nodes) return;
+    clearFieldTimer(field);
+    const changed = field.dataset.fieldState !== "error";
+    field.dataset.fieldState = "error";
+    field.setAttribute("aria-invalid", "true");
+    nodes.wrapper.dataset.fieldState = "error";
+    nodes.check.classList.remove("is-animated");
+    nodes.feedback.textContent = message;
+    nodes.feedback.className = "field-feedback is-visible is-error";
+    if (changed) {
+      nodes.wrapper.classList.remove("field-error-pulse");
+      requestAnimationFrame(() => nodes.wrapper.classList.add("field-error-pulse"));
+    }
+  }
+
+  function clearFieldError(field) {
+    const nodes = getValidationNodes(field);
+    if (!nodes) return;
+    clearFieldTimer(field);
+    field.dataset.fieldState = "neutral";
+    field.removeAttribute("aria-invalid");
+    nodes.wrapper.dataset.fieldState = "neutral";
+    nodes.wrapper.classList.remove("field-error-pulse");
+    nodes.check.classList.remove("is-animated");
+    nodes.feedback.classList.remove("is-visible");
+    fieldFeedbackTimers.set(field, setTimeout(() => {
+      nodes.feedback.textContent = "";
+      nodes.feedback.className = "field-feedback";
+      fieldFeedbackTimers.delete(field);
+    }, 220));
+  }
+
+  function showFieldSuccess(field, { animate = true } = {}) {
+    const nodes = getValidationNodes(field);
+    if (!nodes) return;
+    clearFieldTimer(field);
+    const changed = field.dataset.fieldState !== "success";
+    field.dataset.fieldState = "success";
+    field.setAttribute("aria-invalid", "false");
+    nodes.wrapper.dataset.fieldState = "success";
+    nodes.wrapper.classList.remove("field-error-pulse");
+    nodes.feedback.classList.remove("is-visible");
+    nodes.check.classList.remove("is-animated");
+    if (changed && animate) requestAnimationFrame(() => nodes.check.classList.add("is-animated"));
+    fieldFeedbackTimers.set(field, setTimeout(() => {
+      nodes.feedback.textContent = "";
+      nodes.feedback.className = "field-feedback";
+      fieldFeedbackTimers.delete(field);
+    }, 220));
+  }
+
+  function showValidationSummary(node, message, duration) {
+    if (!node) return;
+    const previousTimer = validationSummaryTimers.get(node);
+    if (previousTimer) {
+      clearTimeout(previousTimer.hide);
+      clearTimeout(previousTimer.remove);
+    }
+    window.goodsUi.message(node, message, "error");
+    node.classList.add("validation-summary");
+    node.classList.remove("is-dismissing");
+    const hide = setTimeout(() => {
+      if (node.textContent !== message) return;
+      node.classList.add("is-dismissing");
+      const remove = setTimeout(() => {
+        if (node.textContent === message) window.goodsUi.message(node, "");
+        node.classList.remove("validation-summary", "is-dismissing");
+        validationSummaryTimers.delete(node);
+      }, 260);
+      validationSummaryTimers.set(node, { hide, remove });
+    }, duration);
+    validationSummaryTimers.set(node, { hide, remove: null });
+  }
+
+  function attachFieldValidation(form, rules, options = {}) {
+    if (!form) return;
+    form.noValidate = true;
+    const fields = Object.entries(rules).map(([name, rule]) => ({
+      field: form.elements.namedItem(name),
+      rule
+    })).filter(({ field }) => field);
+
+    const validate = ({ field, rule }) => {
+      if (field.disabled) return "";
+      if (rule.when && !rule.when(form)) {
+        resetFieldState(field);
+        return "";
+      }
+      return rule.validate(field.value, field, form) || "";
+    };
+
+    for (const entry of fields) {
+      getValidationNodes(entry.field, form);
+      entry.field.addEventListener("input", () => {
+        const message = validate(entry);
+        const state = entry.field.dataset.fieldState || "neutral";
+        if (message) {
+          if (state !== "neutral" || entry.rule.validateWhileTyping) showFieldError(entry.field, message);
+          return;
+        }
+        showFieldSuccess(entry.field);
+      });
+      entry.field.addEventListener("change", () => {
+        const message = validate(entry);
+        if (message) showFieldError(entry.field, message);
+        else showFieldSuccess(entry.field);
+      });
+      entry.field.addEventListener("blur", () => {
+        const message = validate(entry);
+        if (message) showFieldError(entry.field, message);
+      });
+    }
+
+    form.addEventListener("submit", (event) => {
+      let firstInvalid = null;
+      for (const entry of fields) {
+        const message = validate(entry);
+        if (message) {
+          showFieldError(entry.field, message);
+          firstInvalid ||= entry.field;
+        }
+      }
+      if (firstInvalid) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        showValidationSummary(options.summary, options.summaryText || "입력 항목을 확인해 주세요.", options.summaryDuration || 2500);
+        firstInvalid.focus();
+      }
+    }, true);
+
+    form.addEventListener("reset", () => queueMicrotask(() => fields.forEach(({ field }) => resetFieldState(field))));
+  }
+
   window.goodsUi = {
     money(value) {
       return new Intl.NumberFormat("ko-KR", { style: "currency", currency: "KRW", maximumFractionDigits: 0 }).format(value);
     },
     message(node, value, kind = "info") {
       if (!node) return;
+      const summaryTimer = validationSummaryTimers.get(node);
+      if (summaryTimer) {
+        clearTimeout(summaryTimer.hide);
+        clearTimeout(summaryTimer.remove);
+        validationSummaryTimers.delete(node);
+      }
+      node.classList.remove("validation-summary", "is-dismissing");
       node.textContent = value;
       node.dataset.kind = kind;
       node.hidden = !value;
+    },
+    validation: {
+      attach: attachFieldValidation,
+      showFieldError,
+      clearFieldError,
+      showFieldSuccess,
+      resetFieldState
     },
     async currentUser() {
       const { data, error } = await window.goodsShop.auth.getUser();

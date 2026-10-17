@@ -2,6 +2,21 @@ const signupForm = document.querySelector("#signup-form");
 const loginForm = document.querySelector("#login-form");
 const authStatus = document.querySelector("#auth-status");
 
+function validateEmail(value, field) {
+  if (!value.trim()) return "이메일을 입력해 주세요.";
+  return field.validity.typeMismatch ? "이메일 주소를 확인해 주세요." : "";
+}
+
+goodsUi.validation.attach(signupForm, {
+  display_name: { validate: (value) => value.trim() ? "" : "이름을 입력해 주세요." },
+  email: { validate: validateEmail },
+  password: { validateWhileTyping: true, validate: (value) => value.length >= 8 ? "" : "비밀번호는 8자 이상 입력해 주세요." }
+});
+goodsUi.validation.attach(loginForm, {
+  email: { validate: validateEmail },
+  password: { validate: (value) => value ? "" : "비밀번호를 입력해 주세요." }
+});
+
 signupForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
   const button = signupForm.querySelector("button[type=submit]");

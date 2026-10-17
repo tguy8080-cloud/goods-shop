@@ -16,6 +16,46 @@ let accountUser;
 let originalDisplayName = "";
 let savedAddresses = [];
 
+function validatePhone(value) {
+  const digits = value.replace(/[\s()-]/g, "");
+  return /^\+?\d{8,15}$/.test(digits) ? "" : "연락처를 확인해 주세요.";
+}
+
+goodsUi.validation.attach(profileForm, {
+  display_name: { validate: (value) => value.trim() ? "" : "이름을 입력해 주세요." }
+});
+
+const passwordForm = document.querySelector("#password-form");
+goodsUi.validation.attach(passwordForm, {
+  password: { validateWhileTyping: true, validate: (value) => value.length >= 8 ? "" : "비밀번호는 8자 이상 입력해 주세요." },
+  password_confirm: {
+    validateWhileTyping: true,
+    validate: (value, field, form) => value && value === form.elements.namedItem("password").value ? "" : "비밀번호가 서로 다릅니다."
+  }
+});
+
+const newPasswordField = passwordForm?.elements.namedItem("password");
+const confirmPasswordField = passwordForm?.elements.namedItem("password_confirm");
+newPasswordField?.addEventListener("input", () => {
+  if (confirmPasswordField.dataset.fieldState === "neutral") return;
+  if (confirmPasswordField.value && confirmPasswordField.value === newPasswordField.value) {
+    goodsUi.validation.showFieldSuccess(confirmPasswordField);
+  } else {
+    goodsUi.validation.showFieldError(confirmPasswordField, "비밀번호가 서로 다릅니다.");
+  }
+});
+
+goodsUi.validation.attach(addressForm, {
+  recipient_name: { validate: (value) => value.trim() ? "" : "받는 사람을 입력해 주세요." },
+  phone: { validate: validatePhone },
+  postal_code: { validate: (value) => value.trim() ? "" : "주소 검색으로 우편번호를 선택해 주세요." },
+  address1: { validate: (value) => value.trim() ? "" : "주소 검색으로 기본주소를 선택해 주세요." },
+  label: {
+    when: () => addressType.value === "기타",
+    validate: (value) => value.trim() ? "" : "배송지 이름을 입력해 주세요."
+  }
+});
+
 function setProfileEditing(editing) {
   profileName.disabled = !editing;
   profileEditButton.hidden = editing;
@@ -123,6 +163,7 @@ async function loadAddresses() {
 profileEditButton?.addEventListener("click", () => setProfileEditing(true));
 profileCancelButton?.addEventListener("click", () => {
   profileName.value = originalDisplayName;
+  goodsUi.validation.resetFieldState(profileName);
   setProfileEditing(false);
 });
 
@@ -130,6 +171,7 @@ profileForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
   const displayName = profileName.value.trim();
   if (!displayName || displayName.length > 80) {
+    goodsUi.validation.showFieldError(profileName, "이름을 1~80자 사이로 입력해 주세요.");
     goodsUi.message(accountStatus, "이름을 1~80자 사이로 입력해 주세요.", "error");
     return;
   }
@@ -152,16 +194,18 @@ profileForm?.addEventListener("submit", async (event) => {
   goodsUi.message(accountStatus, "이름이 저장되었습니다.", "success");
 });
 
-document.querySelector("#password-form")?.addEventListener("submit", async (event) => {
+passwordForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
   const form = event.currentTarget;
   const password = form.elements.namedItem("password").value;
   const confirmation = form.elements.namedItem("password_confirm").value;
   if (password.length < 8) {
+    goodsUi.validation.showFieldError(form.elements.namedItem("password"), "비밀번호는 8자 이상 입력해 주세요.");
     goodsUi.message(accountStatus, "새 비밀번호를 8자 이상 입력해 주세요.", "error");
     return;
   }
   if (password !== confirmation) {
+    goodsUi.validation.showFieldError(form.elements.namedItem("password_confirm"), "비밀번호가 서로 다릅니다.");
     goodsUi.message(accountStatus, "새 비밀번호와 확인 내용이 서로 다릅니다.", "error");
     return;
   }
@@ -180,8 +224,12 @@ document.querySelector("#password-form")?.addEventListener("submit", async (even
 addressAddButton?.addEventListener("click", () => showAddressForm());
 document.querySelector("#account-address-search")?.addEventListener("click", () => {
   goodsAddressSearch.open(({ postalCode, address }) => {
-    addressForm.elements.namedItem("postal_code").value = postalCode || "";
-    addressForm.elements.namedItem("address1").value = address || "";
+    const postalField = addressForm.elements.namedItem("postal_code");
+    const addressField = addressForm.elements.namedItem("address1");
+    postalField.value = postalCode || "";
+    addressField.value = address || "";
+    goodsUi.validation.showFieldSuccess(postalField);
+    goodsUi.validation.showFieldSuccess(addressField);
     addressForm.elements.namedItem("address2").focus();
     goodsUi.message(document.querySelector("#account-address-search-status"), "주소를 선택했습니다. 상세주소를 입력해 주세요.", "success");
   }, document.querySelector("#account-address-search-status"));
@@ -192,6 +240,7 @@ document.querySelector("#address-cancel-button")?.addEventListener("click", () =
 addressType?.addEventListener("change", () => {
   customLabelWrap.hidden = addressType.value !== "기타";
   if (addressType.value === "기타") customLabel.focus();
+  else goodsUi.validation.resetFieldState(customLabel);
 });
 
 addressForm?.addEventListener("submit", async (event) => {
