@@ -44,7 +44,6 @@ function setEditor(product = null) {
   productForm.reset();
   productForm.elements.namedItem("is_active").checked = product ? product.is_active : true;
   productForm.elements.namedItem("art_key").value = product?.art_key || "sun";
-  productForm.elements.namedItem("slug").value = product?.slug || "";
   productForm.elements.namedItem("name").value = product?.name || "";
   productForm.elements.namedItem("price_krw").value = product?.price_krw ?? "";
   productForm.elements.namedItem("description").value = product?.description || "";
@@ -86,9 +85,6 @@ function makeProductCard(product) {
   info.className = "admin-product-info";
   const heading = document.createElement("h3");
   heading.textContent = product.name;
-  const slug = document.createElement("p");
-  slug.className = "fine-print";
-  slug.textContent = product.slug;
   const price = document.createElement("p");
   price.className = "product-price";
   price.textContent = goodsUi.money(product.price_krw);
@@ -120,7 +116,7 @@ function makeProductCard(product) {
     remove.textContent = "완전 삭제";
     actions.append(remove);
   }
-  info.append(heading, slug, price, badge, actions);
+  info.append(heading, price, badge, actions);
   card.append(info);
   return card;
 }
@@ -286,29 +282,51 @@ async function removeImage(path) {
   if (!path) return true;
   try {
     const { error } = await goodsShop.storage.from("product-images").remove([path]);
-    if (error) console.warn("A product image could not be removed.", error.message);
+    if (error) console.warn("A product image could not be removed.", { code: error?.statusCode || error?.code || "unknown" });
     return !error;
   } catch (error) {
-    console.warn("A product image could not be removed.", error.message);
+    console.warn("A product image could not be removed.", { code: error?.statusCode || error?.code || "unknown" });
     return false;
   }
+}
+
+function createProductSlug() {
+  return `prd-${crypto.randomUUID()}`;
+}
+
+function isProductSlugConflict(error) {
+  return error?.code === "23505" && [error.message, error.details, error.hint]
+    .filter(Boolean)
+    .some((value) => String(value).includes("products_slug_key"));
+}
+
+async function insertProductWithUniqueSlug(productId, values) {
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const { error } = await goodsShop.from("products").insert({
+      id: productId,
+      slug: createProductSlug(),
+      ...values
+    });
+    if (!error) return;
+    if (attempt === 0 && isProductSlugConflict(error)) continue;
+    throw error;
+  }
+  throw new Error("상품을 저장하지 못했습니다.");
 }
 
 productForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const form = event.currentTarget;
-  const slug = form.elements.namedItem("slug").value.trim().toLowerCase();
   const name = form.elements.namedItem("name").value.trim();
   const price = Number(form.elements.namedItem("price_krw").value);
-  if (!/^[a-z0-9-]+$/.test(slug) || !name || !Number.isInteger(price) || price < 1 || price > 100000000) {
-    goodsUi.message(productAdminStatus, "상품 코드, 상품명, 1원 이상 가격을 확인해 주세요.", "error");
+  if (!name || !Number.isInteger(price) || price < 1 || price > 100000000) {
+    goodsUi.message(productAdminStatus, "상품명과 1원 이상 가격을 확인해 주세요.", "error");
     return;
   }
   const file = form.elements.namedItem("image").files[0];
   const oldPath = editingProduct?.image_path || null;
   const wasEditing = Boolean(editingProduct);
   const values = {
-    slug,
     name,
     description: form.elements.namedItem("description").value.trim(),
     price_krw: price,
@@ -326,11 +344,10 @@ productForm.addEventListener("submit", async (event) => {
     const savedValues = uploadedPath ? { ...values, image_path: uploadedPath } : values;
     if (productId) {
       if (wasEditing) {
-        const { error } = await goodsShop.from("products").update(savedValues).eq("id", productId);
+        const { error } = await goodsShop.from("products").update({ ...savedValues, slug: editingProduct.slug }).eq("id", productId);
         if (error) throw error;
       } else {
-        const { error } = await goodsShop.from("products").insert({ id: productId, ...savedValues });
-        if (error) throw error;
+        await insertProductWithUniqueSlug(productId, savedValues);
       }
       databaseSaved = true;
     }
@@ -342,8 +359,9 @@ productForm.addEventListener("submit", async (event) => {
   } catch (error) {
     const cleanupFailed = uploadedPath && !databaseSaved ? !(await removeImage(uploadedPath)) : false;
     const saveError = databaseSaved
-      ? `상품은 저장했지만 목록을 새로 불러오지 못했습니다. ${error.message || "잠시 후 새로고침해 주세요."}`
-      : `상품을 저장하지 못했습니다. ${error.message || "입력값과 권한을 확인해 주세요."}`;
+      ? "상품은 저장됐지만 목록을 다시 불러오지 못했습니다. 페이지를 새로고침해 주세요."
+      : "상품을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.";
+    console.error("Product save failed.", { code: error?.code || "unknown", cleanupFailed: Boolean(cleanupFailed) });
     goodsUi.message(productAdminStatus, cleanupFailed ? `${saveError} 업로드한 임시 이미지 파일도 정리하지 못했습니다.` : saveError, "error");
   } finally {
     button.disabled = false;
@@ -414,7 +432,11 @@ productAdminList.addEventListener("click", async (event) => {
       goodsUi.message(productAdminStatus, imageRemoved ? "상품과 연결된 이미지를 완전히 삭제했습니다." : "상품은 삭제했지만 연결된 이미지 파일 정리에 실패했습니다.", imageRemoved ? "success" : "error");
     }
   } catch (error) {
-    goodsUi.message(productAdminStatus, error.message || "상품 변경을 완료하지 못했습니다.", "error");
+    console.error("Product action failed.", { action: button.dataset.action, code: error?.code || "unknown" });
+    const userMessage = error?.message === "주문 이력이 있는 상품은 완전 삭제할 수 없습니다. 판매중지를 이용해 주세요."
+      ? error.message
+      : "상품 변경을 완료하지 못했습니다. 잠시 후 다시 시도해 주세요.";
+    goodsUi.message(productAdminStatus, userMessage, "error");
   } finally {
     button.disabled = false;
   }
