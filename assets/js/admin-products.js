@@ -18,6 +18,8 @@ const productCropContext = productCropCanvas?.getContext("2d");
 const productCropZoom = document.querySelector("#product-crop-zoom");
 let cropSourceFile = null;
 let cropSourceMode = null;
+let cropSourceFileBeforeEditing = null;
+let cropSourceModeBeforeEditing = null;
 let cropBitmap = null;
 let cropView = null;
 let cropPending = false;
@@ -77,6 +79,8 @@ function renderImagePreview(file = null) {
 function setEditor(product = null) {
   cropSourceFile = null;
   cropSourceMode = null;
+  cropSourceFileBeforeEditing = null;
+  cropSourceModeBeforeEditing = null;
   cropPending = false;
   appliedProductImageFile = null;
   if (productImageInput) productImageInput.value = "";
@@ -100,6 +104,8 @@ function resetEditor() {
   cropPending = false;
   cropSourceFile = null;
   cropSourceMode = null;
+  cropSourceFileBeforeEditing = null;
+  cropSourceModeBeforeEditing = null;
   cropFileBeforeEditing = null;
   appliedProductImageFile = null;
   if (cropBitmap?.close) cropBitmap.close();
@@ -455,36 +461,60 @@ function drawProductCrop() {
 async function openProductCropEditor(file, mode = "new") {
   if (!PRODUCT_IMAGE_TYPES.has(file.type)) throw new Error("JPG, PNG, WebP 형식의 이미지만 사용할 수 있습니다.");
   if (cropBitmap?.close) cropBitmap.close();
-  cropBitmap = await decodeProductImage(file);
-  if (!cropBitmap.width || !cropBitmap.height) throw new Error("이미지 크기를 확인할 수 없습니다.");
+  const decodedImage = await decodeProductImage(file);
+  if (!decodedImage.width || !decodedImage.height) {
+    decodedImage.close?.();
+    throw new Error("이미지 크기를 확인할 수 없습니다.");
+  }
+  cropBitmap = decodedImage;
   cropFileBeforeEditing = appliedProductImageFile;
+  cropSourceFileBeforeEditing = cropSourceFile;
+  cropSourceModeBeforeEditing = cropSourceMode;
   cropSourceFile = file;
   cropSourceMode = mode;
   cropPending = true;
   const baseScale = Math.max(CROP_FRAME_SIZE / cropBitmap.width, CROP_FRAME_SIZE / cropBitmap.height);
   cropView = { width: cropBitmap.width, height: cropBitmap.height, baseScale, scale: baseScale, offsetX: 0, offsetY: 0, dragging: false };
   productCropZoom.value = "1";
-  drawProductCrop();
-  if (!productCropDialog.open) productCropDialog.showModal();
-  document.querySelector("#product-crop-reset").focus({ preventScroll: true });
+  try {
+    drawProductCrop();
+    if (!productCropDialog.open) productCropDialog.showModal();
+    document.querySelector("#product-crop-reset").focus({ preventScroll: true });
+  } catch (error) {
+    cropBitmap?.close?.();
+    cropBitmap = null;
+    cropView = null;
+    cropSourceFile = cropSourceFileBeforeEditing;
+    cropSourceMode = cropSourceModeBeforeEditing;
+    cropFileBeforeEditing = null;
+    cropSourceFileBeforeEditing = null;
+    cropSourceModeBeforeEditing = null;
+    cropPending = false;
+    throw error;
+  }
 }
 
 function finishProductCropEditor(applied) {
   if (!applied) {
-    const transfer = new DataTransfer();
-    if (cropFileBeforeEditing) transfer.items.add(cropFileBeforeEditing);
-    productImageInput.files = transfer.files;
-    appliedProductImageFile = cropFileBeforeEditing;
-    if (cropSourceMode === "existing") {
-      cropSourceFile = null;
-      cropSourceMode = null;
-      cropPending = false;
-      renderImagePreview(cropFileBeforeEditing);
+    if (cropFileBeforeEditing) {
+      const transfer = new DataTransfer();
+      transfer.items.add(cropFileBeforeEditing);
+      productImageInput.files = transfer.files;
+      appliedProductImageFile = cropFileBeforeEditing;
+      renderImagePreview(appliedProductImageFile);
     } else {
-      cropPending = Boolean(cropSourceFile && !cropFileBeforeEditing);
-      renderImagePreview(cropFileBeforeEditing);
+      productImageInput.value = "";
+      renderImagePreview();
     }
+    cropSourceFile = cropSourceFileBeforeEditing;
+    cropSourceMode = cropSourceModeBeforeEditing;
+    cropPending = false;
+  } else {
+    appliedProductImageFile = productImageInput.files[0] || appliedProductImageFile;
   }
+  cropFileBeforeEditing = null;
+  cropSourceFileBeforeEditing = null;
+  cropSourceModeBeforeEditing = null;
   productCropDialog.close();
   if (cropBitmap?.close) cropBitmap.close();
   cropBitmap = null;
@@ -622,9 +652,6 @@ productImageInput.addEventListener("change", async () => {
   try {
     await openProductCropEditor(file, "new");
   } catch (error) {
-    cropPending = false;
-    cropSourceFile = null;
-    cropSourceMode = null;
     goodsUi.message(productAdminStatus, error.message || "이미지를 열지 못했습니다.", "error");
   }
 });
@@ -721,8 +748,9 @@ productForm.addEventListener("submit", async (event) => {
     const savedValues = uploadedPath ? { ...values, image_path: uploadedPath } : values;
     if (productId) {
       if (wasEditing) {
-        const { error } = await goodsShop.from("products").update({ ...savedValues, slug: editingProduct.slug }).eq("id", productId);
+        const { data, error } = await goodsShop.from("products").update({ ...savedValues, slug: editingProduct.slug }).eq("id", productId).select("id").maybeSingle();
         if (error) throw error;
+        if (!data) throw new Error("상품 정보를 수정하지 못했습니다.");
       } else {
         await insertProductWithUniqueSlug(productId, savedValues);
       }
@@ -780,8 +808,9 @@ productAdminList.addEventListener("click", async (event) => {
         throw new Error("주문 이력이 있는 상품은 완전 삭제할 수 없습니다. 판매중지를 이용해 주세요.");
       }
       if (!window.confirm(`주문 이력이 없는 “${product.name}” 상품과 연결된 이미지를 완전히 삭제할까요?`)) return;
-      const { error } = await goodsShop.from("products").delete().eq("id", product.id);
+      const { data, error } = await goodsShop.from("products").delete().eq("id", product.id).select("id").maybeSingle();
       if (error) throw error;
+      if (!data) throw new Error("상품을 삭제하지 못했습니다.");
       const imageRemoved = await removeImage(product.image_path);
       await loadProducts();
       goodsUi.message(productAdminStatus, imageRemoved ? "상품과 연결된 이미지를 완전히 삭제했습니다." : "상품은 삭제했지만 연결된 이미지 파일 정리에 실패했습니다.", imageRemoved ? "success" : "error");
