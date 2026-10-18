@@ -2,8 +2,8 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>관리자 | Goods Shop</title><link rel="stylesheet" href="assets/css/style.css?v=20261017-6">
-  <script src="assets/js/config.js" defer></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.89.0" defer></script><script src="assets/js/client.js?v=20261017-6" defer></script><script src="assets/js/admin-products.js?v=20261017-6" defer></script>
+  <title>관리자 | Goods Shop</title><link rel="stylesheet" href="assets/css/style.css?v=20261018-1">
+  <script src="assets/js/config.js" defer></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.89.0" defer></script><script src="assets/js/client.js?v=20261017-6" defer></script><script src="assets/js/admin-products.js?v=20261018-1" defer></script>
 </head>
 <body>
   <header class="site-header"><a class="brand" href="index.html">goods shop<span>.</span></a><nav class="site-nav" aria-label="주요 메뉴"><a href="index.html" data-page="index.html">상품</a><a id="orders-nav-link" href="my-orders.html" data-page="my-orders.html" hidden>내 주문</a><a id="admin-nav-link" href="admin.html" data-page="admin.html" hidden>관리자</a><a id="user-greeting" class="user-greeting" href="account.html" aria-live="polite" hidden></a><a id="account-link" class="nav-cta" href="auth.html">로그인</a></nav></header>
@@ -18,8 +18,16 @@
           <label>가격 (원)<input name="price_krw" type="number" min="1" max="100000000" step="1" required></label>
           <label>설명<textarea name="description" rows="4" maxlength="5000"></textarea></label>
           <label>기본 그림 색상<select name="art_key"><option value="sun">따뜻한 색</option><option value="blue">파란 색</option><option value="green">초록 색</option></select></label>
-          <label>상품 이미지 (JPG, PNG, WebP)<input id="product-image" name="image" type="file" accept="image/jpeg,image/png,image/webp"><small>5MB를 넘는 이미지는 자동으로 크기와 용량을 줄입니다. 4.5MB 이하로 최적화해 업로드합니다.</small></label>
-          <div id="product-image-preview" class="product-image-preview" aria-live="polite"><p class="fine-print">선택한 이미지 미리보기가 여기에 표시됩니다.</p></div>
+          <div class="product-image-field">
+            <span class="field-label">상품 이미지 (JPG, PNG, WebP)</span>
+            <input id="product-image" name="image" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+            <p class="fine-print">사진을 선택하면 1:1 맞춤 편집기가 열립니다. 최종 이미지는 1200 × 1200px WebP로 저장됩니다.</p>
+            <div id="product-image-preview" class="product-image-preview" aria-live="polite"><p class="fine-print">선택한 이미지 미리보기가 여기에 표시됩니다.</p></div>
+            <div class="button-row product-image-controls">
+              <button id="product-image-edit" class="button button-light" type="button" hidden>사진 다시 맞추기</button>
+              <button id="product-image-choose" class="button button-light" type="button">다른 사진 선택</button>
+            </div>
+          </div>
           <label class="checkbox-label"><input name="is_active" type="checkbox" checked> 판매중</label>
           <div class="button-row"><button id="product-save-button" class="button button-dark" type="submit">상품 추가</button><button id="product-cancel-button" class="button button-light" type="button">취소</button></div>
         </form>
@@ -29,6 +37,23 @@
       </section>
     </section>
   </main>
+  <dialog id="product-crop-dialog" class="product-crop-dialog" aria-labelledby="product-crop-title">
+    <div class="product-crop-shell">
+      <button id="product-crop-close" class="button button-light product-crop-close" type="button" aria-label="사진 편집 취소">×</button>
+      <p class="eyebrow">IMAGE EDITOR</p>
+      <h2 id="product-crop-title">상품 사진 맞추기</h2>
+      <p class="muted">상품 목록에 표시될 영역을 맞춰 주세요.</p>
+      <div id="product-crop-stage" class="product-crop-stage">
+        <canvas id="product-crop-canvas" width="600" height="420" aria-label="정사각형으로 저장될 영역입니다. 사진을 드래그해 위치를 조정하세요." tabindex="0"></canvas>
+      </div>
+      <label class="crop-zoom-control" for="product-crop-zoom"><span>축소</span><input id="product-crop-zoom" type="range" min="1" max="3" step="0.01" value="1"><span>확대</span></label>
+      <div class="button-row product-crop-actions">
+        <button id="product-crop-reset" class="button button-light" type="button">초기화</button>
+        <button id="product-crop-cancel" class="button button-light" type="button">취소</button>
+        <button id="product-crop-apply" class="button button-dark" type="button">적용하기</button>
+      </div>
+    </div>
+  </dialog>
   <footer class="site-footer"><span>goods shop</span><span>상품 쓰기 권한은 DB 정책에서도 관리자만 허용합니다.</span></footer>
 </body>
 </html>

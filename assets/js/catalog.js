@@ -38,7 +38,7 @@ function makeProductCard(product) {
 }
 
 async function loadProducts() {
-  const { data, error } = await goodsShop.from("products").select("id,slug,name,description,price_krw,art_key,image_path").eq("is_active", true).order("created_at");
+  const { data, error } = await goodsShop.from("products").select("id,slug,name,description,price_krw,art_key,image_path,sort_order,created_at").eq("is_active", true).order("sort_order", { ascending: true }).order("created_at", { ascending: true }).order("id", { ascending: true });
   if (error) {
     goodsUi.message(catalogStatus, "상품을 불러오지 못했습니다. 연결 상태를 확인한 뒤 새로고침해 주세요.", "error");
     return;
